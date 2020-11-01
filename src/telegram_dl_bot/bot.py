@@ -61,6 +61,10 @@ def status(update: Update, context: CallbackContext, user_data: UserData) -> Non
   s = "authenticated" if user_data.is_authenticated else "not authenticated"
   update.message.reply_text(f"{update.message.chat.first_name}, you are {s}")
 
+message_args = {
+  "disable_web_page_preview": True
+}
+
 class DownloadTask:
   url: str
 
@@ -73,14 +77,14 @@ class DownloadTask:
     orig_context: CallbackContext = context.job.context
     user_data = get_user_data(orig_context)
     logger.info("Begin download of: %s for user %d", self.url, user_data.chat_id)
-    context.bot.send_message(chat_id=user_data.chat_id, text=f"Download of '{self.url}' STARTED")
+    context.bot.send_message(chat_id=user_data.chat_id, text=f"Download of '{self.url}' STARTED", **message_args)
     cwd = os.getcwd()
     try:
       os.chdir(config.DOWNLOAD_FOLDER)
       ydl = youtube_dl.YoutubeDL()
       with ydl:
         result = ydl.extract_info(self.url)
-      context.bot.send_message(chat_id=user_data.chat_id, text=f"Download of '{self.url}' COMPLETED!")
+      context.bot.send_message(chat_id=user_data.chat_id, text=f"Download of '{self.url}' COMPLETED!", **message_args)
     except Exception as e:
       msg = """
   Download of '{url}' FAILED!
@@ -88,7 +92,7 @@ class DownloadTask:
   """.format(url=self.url, exc=click.unstyle(str(e)))
       logger.debug(msg)
       context.bot.send_message(chat_id=user_data.chat_id, parse_mode="HTML", 
-                              text=msg)
+                              text=msg, **message_args)
     finally:
       os.chdir(cwd)
 
