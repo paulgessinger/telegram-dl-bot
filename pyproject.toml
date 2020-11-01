@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "telegram-dl-bot"
+version = "0.1.0"
+description = ""
+authors = ["Paul Gessinger <hello@paulgessinger.com>"]
+packages = [
+    { include = "telegram_dl_bot", from = "src" },
+]
+
+[tool.poetry.scripts]
+telegram-dl-bot = 'telegram_dl_bot.cli:main'
+
+[tool.poetry.dependencies]
+python = "^3.7"
+youtube_dl = "^2020.11.1"
+python-telegram-bot = "^13.0"
+click = "^7.1.2"
+python-dotenv = "^0.15.0"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0a5"]
+build-backend = "poetry.core.masonry.api"
