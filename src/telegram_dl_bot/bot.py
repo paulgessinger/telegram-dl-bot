@@ -3,8 +3,11 @@ import functools
 import os
 
 from telegram import Update
-from telegram.ext import Updater, CommandHandler, CallbackContext, PicklePersistence
+from telegram.ext import Updater, CommandHandler, MessageHandler, CallbackContext, PicklePersistence
+from telegram.ext.filters import Filters
 import youtube_dl
+import click
+import validators
 
 from telegram_dl_bot import config
 from telegram_dl_bot.logging import logger
@@ -58,30 +61,51 @@ def status(update: Update, context: CallbackContext, user_data: UserData) -> Non
   s = "authenticated" if user_data.is_authenticated else "not authenticated"
   update.message.reply_text(f"{update.message.chat.first_name}, you are {s}")
 
+class DownloadTask:
+  url: str
+
+  __name__ = "DownloadTask"
+
+  def __init__(self, url):
+    self.url = url
+
+  def __call__(self, context: CallbackContext) -> None:
+    orig_context: CallbackContext = context.job.context
+    user_data = get_user_data(orig_context)
+    logger.info("Begin download of: %s for user %d", self.url, user_data.chat_id)
+    context.bot.send_message(chat_id=user_data.chat_id, text=f"Download of '{self.url}' STARTED")
+    cwd = os.getcwd()
+    try:
+      os.chdir(config.DOWNLOAD_FOLDER)
+      ydl = youtube_dl.YoutubeDL()
+      with ydl:
+        result = ydl.extract_info(self.url)
+      context.bot.send_message(chat_id=user_data.chat_id, text=f"Download of '{self.url}' COMPLETED!")
+    except Exception as e:
+      msg = """
+  Download of '{url}' FAILED!
+  <pre>{exc}</pre>
+  """.format(url=self.url, exc=click.unstyle(str(e)))
+      logger.debug(msg)
+      context.bot.send_message(chat_id=user_data.chat_id, parse_mode="HTML", 
+                              text=msg)
+    finally:
+      os.chdir(cwd)
+
 @require_auth
 def download(update: Update, context: CallbackContext, user_data: UserData) -> None:
   url, = context.args
   logger.info("Requested download: %s", url)
-  context.job_queue.run_once(perform_download, 0, context=context)
+  context.job_queue.run_once(DownloadTask(url), 0, context=context)
 
-def perform_download(context: CallbackContext):
-  url, = context.job.context.args
-  orig_context: CallbackContext = context.job.context
-  user_data = get_user_data(orig_context)
-  logger.info("Begin download of: %s for user %d", url, user_data.chat_id)
-  context.bot.send_message(chat_id=user_data.chat_id, text=f"Download of '{url}' STARTED")
-  cwd = os.getcwd()
-  try:
-    os.chdir(config.DOWNLOAD_FOLDER)
-    ydl = youtube_dl.YoutubeDL()
-    with ydl:
-      result = ydl.extract_info(url)
-    context.bot.send_message(chat_id=user_data.chat_id, text=f"Download of '{url}' COMPLETED!")
-  except:
-    context.bot.send_message(chat_id=user_data.chat_id, text=f"Download of '{url}' FAILED!")
-  finally:
-    os.chdir(cwd)
-
+@require_auth
+def download_message(update: Update, context: CallbackContext, user_data: UserData) -> None:
+  text = update.message.text
+  if validators.url(text):
+    logger.info("Requested download: %s", text)
+    context.job_queue.run_once(DownloadTask(text), 0, context=context)
+  else:
+    update.message.reply_text("Sorry, I don't know what to do with this")
 
 def make_bot() -> Updater:
 
@@ -94,5 +118,6 @@ def make_bot() -> Updater:
   dp.add_handler(CommandHandler("deauth", deauth))
   dp.add_handler(CommandHandler("status", status))
   dp.add_handler(CommandHandler("download", download))
+  dp.add_handler(MessageHandler(Filters.text & (~Filters.command), callback=download_message))
 
   return updater

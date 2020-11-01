@@ -16,6 +16,7 @@ youtube_dl = "^2020.11.1"
 python-telegram-bot = "^13.0"
 click = "^7.1.2"
 python-dotenv = "^0.15.0"
+validators = "^0.18.1"
 
 [tool.poetry.dev-dependencies]
 

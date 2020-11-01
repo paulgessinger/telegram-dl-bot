@@ -152,6 +152,21 @@ python-versions = "*"
 pytz = "*"
 
 [[package]]
+name = "validators"
+version = "0.18.1"
+description = "Python Data Validation for Humans™."
+category = "main"
+optional = false
+python-versions = ">=3.4"
+
+[package.dependencies]
+decorator = ">=3.4.0"
+six = ">=1.4.0"
+
+[package.extras]
+test = ["pytest (>=2.2.3)", "flake8 (>=2.4.0)", "isort (>=4.2.2)"]
+
+[[package]]
 name = "youtube-dl"
 version = "2020.11.1.1"
 description = "YouTube video downloader"
@@ -162,7 +177,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "fdc569e5da953470859cd7633950917ea2876335fa97773eb495fcb7ac31d0d2"
+content-hash = "4adc9a7559b37e2d81d906a652c7055ae961c454b0a1336d6897569ece61015f"
 
 [metadata.files]
 apscheduler = [
@@ -309,6 +324,10 @@ tornado = [
 tzlocal = [
     {file = "tzlocal-2.1-py2.py3-none-any.whl", hash = "sha256:e2cb6c6b5b604af38597403e9852872d7f534962ae2954c7f35efcb1ccacf4a4"},
     {file = "tzlocal-2.1.tar.gz", hash = "sha256:643c97c5294aedc737780a49d9df30889321cbe1204eac2c2ec6134035a92e44"},
+]
+validators = [
+    {file = "validators-0.18.1-py3-none-any.whl", hash = "sha256:f787632edf9e054e9cf580d3016f5b0e9ad83b8a00a258b71406db0456e17007"},
+    {file = "validators-0.18.1.tar.gz", hash = "sha256:1a653b33c0ab091790f65f42b61aa191e354ed5fdedfeb17d24a86d0789966d7"},
 ]
 youtube-dl = [
     {file = "youtube_dl-2020.11.1.1-py2.py3-none-any.whl", hash = "sha256:bc86fae4923b9cdc34d3397ddc0bc0e9d81b4cfbd16f537f97efa5499070456f"},
