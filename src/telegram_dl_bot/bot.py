@@ -81,7 +81,7 @@ class DownloadTask:
     cwd = os.getcwd()
     try:
       os.chdir(config.DOWNLOAD_FOLDER)
-      ydl = youtube_dl.YoutubeDL()
+      ydl = youtube_dl.YoutubeDL({"format":"bestvideo+bestaudio"})
       with ydl:
         result = ydl.extract_info(self.url)
       context.bot.send_message(chat_id=user_data.chat_id, text=f"Download of '{self.url}' COMPLETED!", **message_args)
